@@ -6,6 +6,12 @@
   "repository": "https://github.com/sayyidyofa/miniproject",
   "author": "Team 2",
   "license": "MIT",
+  "scripts": {
+    "dev": "ts-node src/main.ts",
+    "build": "yarn run tsc",
+    "prod": "node dist/main.js",
+    "lint": "yarn run eslint --ignore-path .gitignore --ext .ts"
+  },
   "devDependencies": {
     "@types/node": "^17.0.2",
     "@types/underscore": "^1.11.4",
