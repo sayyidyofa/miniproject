@@ -1,12 +1,12 @@
 # before you use please go to inventory and change <sudo_password>
 # to your controlled pc sudo password (don't forget to delete before you push to github)
 
-# ansible-playbook -e device=<your-input> <directory-jump>/restart-device.yml
-# ansible-playbook -e device=127.0.0.1 ../playbooks/restart-device.yml
+# ansible-playbook -e device=<your-input> -e remote_user=<remote-user-input> <directory-jump>/restart-device.yml
+# ansible-playbook -e device=127.0.0.1 -e remote_user=macbook ../playbooks/restart-device.yml
 
 - name: Restart device with host using external variable
   hosts: "{{ device }}"
-  remote_user: macbook
+  remote_user: "{{ remote_user }}"
   become: true
   tasks:
     - name: Reboot device and waiting connection to come back up.
