@@ -17,15 +17,25 @@ router.post('/', (req, res)=>{
         
         // Check if the body from request has data that we need 
         if(type && from && timestamp){
-
             // Call automator and pass the parameter
             // automate(type, from, timestamp);
-            res.send({message:'Thanks!'});
+            res.status(202).send({message:'Thanks! Your request is being process'});
         }else{
-            res.send({message:'The body is not meet the requirement'})
+            const required = [];
+            if (!type) {
+                required.push("type");
+            }
+            if (!from) {
+                required.push("from");
+            }
+            if (!timestamp) {
+                required.push("timestamp");
+            }
+            // Status 411 : Length Required
+            res.status(411).send({message:`[${required}] is required.`})
         }
     } catch (error) {
-        console.log(error)
+        res.status(500).send({message:'Internal Server Error'})
     }
 
 });
