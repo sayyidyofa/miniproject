@@ -31,8 +31,7 @@ router.post('/', (req, res)=>{
             if (!timestamp) {
                 required.push("timestamp");
             }
-            // Status 411 : Length Required
-            res.status(411).send({message:`[${required}] is required.`})
+            res.status(400).send({message:`[${required}] is required.`})
         }
     } catch (error) {
         res.status(500).send({message:'Internal Server Error'})
