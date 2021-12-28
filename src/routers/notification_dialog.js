@@ -2,13 +2,15 @@ import request from 'request';
 import express from 'express';
 import { createRequire } from "module";
 import { v4 as uuid } from 'uuid';
+import dotenv from 'dotenv';
 const require = createRequire(import.meta.url);
 
 const roles = require('../services/roles.json');
 
 const router =  express.Router();
+dotenv.config()
 //Endpoint slack webhooks for rpa_team channels
-const url = 'https://hooks.slack.com/services/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';
+const url = process.env.WEBHOOK_URL_RPA_TEAM;
 const timeouts = {};
 
 router.post('/escalation_dialog', function(req,res){
@@ -17,6 +19,7 @@ router.post('/escalation_dialog', function(req,res){
         const service = req.body.service;
         const roleId = req.body.roleId;
         const messageId = uuid();
+        console.log(messageId)
 
         const members = lookup_role(roleId);
 
@@ -35,7 +38,7 @@ router.post('/escalation_dialog', function(req,res){
                             "name": "approve",
                             "text": "Yes",
                             "type": "button",
-                            "value": `{ roleId: ${roleId}, messageId: ${messageId} }`,
+                            "value": `{ "roleId": "${roleId}", "messageId": "${messageId}" }`,
                             // "value": `${roleId}`,
                             "style": "primary",
                             "action_id": "approve"
@@ -44,7 +47,7 @@ router.post('/escalation_dialog', function(req,res){
                             "name": "reject",
                             "text": "No",
                             "type": "button",
-                            "value": `{ roleId: ${roleId}, messageId: ${messageId} }`,
+                            "value": `{ "roleId": "${roleId}", "messageId": "${messageId}" }`,
                             // "value": `${roleId}`,
                             "style": "danger",
                             "action_id": "reject"
@@ -71,7 +74,7 @@ router.post('/escalation_dialog', function(req,res){
                 })}
             }, (error, res, body) => {
                 console.log(error, body, res.statusCode)
-                // delete timeouts[messageId];
+                delete timeouts[messageId];
             })
         }, 7000);
         timeouts[messageId] = currentTimeout;
@@ -86,8 +89,8 @@ router.post('/response', function(req,res){
     const responses = JSON.parse(req.body.payload);
     const act = responses.actions[0].action_id;
     // const roleId = responses.actions[0].value;
-    const { roleId, messageId } = JSON.parse(responses.actions[0].value);
-    console.log(responses);
+    const {roleId, messageId} = JSON.parse(responses.actions[0].value);
+
     if (messageId && timeouts[messageId]) {
         clearTimeout(timeouts[messageId]);
     }
@@ -104,6 +107,7 @@ router.post('/response', function(req,res){
 
 function lookup_role(role_id=1) {
   const role = roles[role_id];
+  console.log(role_id)
   const slack_id = [];
   for (let { id_slack } of role) {
       slack_id.push(`<@${id_slack}>`)
