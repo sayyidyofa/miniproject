@@ -4,12 +4,11 @@ import dotenv from 'dotenv';
 import { createRequire } from "module";
 
 dotenv.config()
-const url = process.env.WEBHOOK_URL;
 const require = createRequire(import.meta.url);
 const roles = require('../services/roles.json');
+const url = process.env.WEBHOOK_URL;
 const router =  express.Router();
-// const url = process.env.WEBHOOK_URL;
-//Endpoint slack webhooks for rpa_team channels
+var payload_block ={}
 
 
 router.post('/escalation_dialog', function(req,res){
@@ -19,7 +18,7 @@ router.post('/escalation_dialog', function(req,res){
 
     const members = lookup_role(roleId);
 
-    const payload_block = {
+    payload_block = {
         "channel" : "C02S28LEWRJ",
         "type": "interactive_message",
         "text" : "RPA Reporting",
@@ -60,8 +59,6 @@ router.post('/escalation_dialog', function(req,res){
 
 })
 
-
-
 router.post('/response', function(req,res){
     const responses = JSON.parse(req.body.payload);
     const act = responses.actions[0].name;
@@ -72,7 +69,6 @@ router.post('/response', function(req,res){
 
 
     if (is_same_user){
-        console.log(responses);
         if (act == 'approve'){
             res.send(`<@${responses.user.id}> has been take to fix the issues!`);
           }else{
@@ -80,7 +76,11 @@ router.post('/response', function(req,res){
           }
     }else{
         res.send(`<@${responses.user.id}> You dont have permissions to take this error`);
-        // sendAlert();
+        request.post({
+            headers : { 'Content-type' : 'application/json' },
+            url,
+            form : {payload: JSON.stringify(payload_block)}
+        }, (error, res, body) => console.log(error, body));
     }
     
 })
@@ -106,16 +106,12 @@ function user_checking(role_id=1, user_action){
     }
   }
 
-  var final_validation =""
   if (validation.includes(true)){
-      final_validation = true
+      return true
   }else{
-      final_validation = false
+      return false
   }
-
-  return final_validation;
 
 }
 
-// sendAlert();
 export default router
