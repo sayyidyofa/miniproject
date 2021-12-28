@@ -4,6 +4,7 @@ import express from 'express';
 
 // This is the router from express
 const router = express.Router();
+const url = process.env.WEBHOOK_URL;
 
 // Define POST method request
 router.post('/', (req, res)=>{
@@ -19,7 +20,26 @@ router.post('/', (req, res)=>{
         if(type && from && timestamp){
             // Call automator and pass the parameter
             // automate(type, from, timestamp);
+            const payload_block = {
+                "text" : "RPA Reporting",
+                "attachments": [{
+                    "blocks": [{
+                        "type": "section",
+                        "text": {
+                                    "type": "mrkdwn",
+                                    "text": `[ERROR-${timestamp}] ${type} from service/IP ${from} `
+                                },
+                        "block_id": "alert_error"
+                    }]
+                }
+            ]};
             res.status(202).send({message:'Thanks! Your request is being process'});
+
+            request.post({
+                headers : { 'Content-type' : 'application/json' },
+                url,
+                form : {payload: JSON.stringify(payload_block)}
+            },(error, res, body) => console.log(error, body, res.statusCode));
         }else{
             const required = [];
             if (!type) {

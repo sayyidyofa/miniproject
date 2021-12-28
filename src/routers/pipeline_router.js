@@ -5,7 +5,8 @@ const router =  express.Router();
 
 // import service
 import checkAddress from '../services/addressChecker.js';
-import generatePlaybookLink from '../services/automator.js'
+import generatePlaybookLink from '../services/automator.js';
+
 
 router.post('', automatePlaybook)
 

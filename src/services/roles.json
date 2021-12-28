@@ -1,0 +1,27 @@
+{
+    "1" : 
+    [
+        {
+            "id_slack" : "U02S00WJ1MY",
+            "name" : "M. Sayyid",
+            "nik" : "2108",
+            "posititon" : "developer"
+        },
+        {
+            "id_slack" : "U02SPNHD2BS",
+            "name" : "Basthatan",
+            "nik" : "2109",
+            "posititon" : "developer"
+        }
+    ],
+    "2" :
+    [
+        {
+            "id_slack" : "U02SPNE5SHE",
+            "name" : "M. Randi",
+            "nik" : "2101",
+            "posititon" : "dev-ops"
+        }
+
+    ]
+}
