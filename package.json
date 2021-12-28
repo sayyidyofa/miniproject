@@ -8,7 +8,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "node src/main.js"
+    "dev": "node src/main.js",
+    "dummy": "cd tests && node testApp.js"
   },
   "devDependencies": {
     "eslint": "^8.5.0",
