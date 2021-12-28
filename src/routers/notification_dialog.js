@@ -11,6 +11,7 @@ const router =  express.Router();
 dotenv.config()
 //Endpoint slack webhooks for rpa_team channels
 const url = process.env.WEBHOOK_URL_RPA_TEAM;
+const TIMEOUT_SECOND = 60 * 1000;
 const timeouts = {};
 
 router.post('/escalation_dialog', function(req,res){
@@ -19,14 +20,14 @@ router.post('/escalation_dialog', function(req,res){
         const service = req.body.service;
         const roleId = req.body.roleId;
         const messageId = uuid();
-        console.log(messageId)
 
         const members = lookup_role(roleId);
+        const value = JSON.stringify({ roleId, messageId });
 
         const payload_block = {
             "channel" : "C02S28LEWRJ",
             "type": "interactive_message",
-            "text" : "Do not click, testing 60s timeout!",
+            "text" : "RPA Reporting",
             "attachments": [
                 {
                     "text": `[ERROR] Hi, developer ${members}. ${error_message} ${service}, would you like to fix it?`,
@@ -38,8 +39,7 @@ router.post('/escalation_dialog', function(req,res){
                             "name": "approve",
                             "text": "Yes",
                             "type": "button",
-                            "value": `{ "roleId": "${roleId}", "messageId": "${messageId}" }`,
-                            // "value": `${roleId}`,
+                            "value": value,
                             "style": "primary",
                             "action_id": "approve"
                         },
@@ -47,8 +47,7 @@ router.post('/escalation_dialog', function(req,res){
                             "name": "reject",
                             "text": "No",
                             "type": "button",
-                            "value": `{ "roleId": "${roleId}", "messageId": "${messageId}" }`,
-                            // "value": `${roleId}`,
+                            "value": value,
                             "style": "danger",
                             "action_id": "reject"
                         }
@@ -61,59 +60,60 @@ router.post('/escalation_dialog', function(req,res){
             url,
             form : {payload: JSON.stringify(payload_block)}
         }, (error, res, body) => {
-            console.log(error, body, res.statusCode)
+            if (error) res.sendStatus(500);
         });
 
         const currentTimeout = setTimeout(() => {
+            const supervisor = lookup_role(roleId + 1);
             request.post({
                 headers : { 'Content-type' : 'application/json' },
                 url,
-                form : {payload: JSON.stringify({
-                    channel: 'C02S28LEWRJ',
-                    text: `There is no response from ${members.join(' or ')}, this alert will be assigned to <@U02SPNE5SHE>`
-                })}
+                form : {
+                    payload: JSON.stringify({
+                        channel: 'C02S28LEWRJ',
+                        text: `There is no response from ${members.join(' or ')}, this alert will be assigned to <${supervisor}>`
+                    })
+                }
             }, (error, res, body) => {
-                console.log(error, body, res.statusCode)
+                if (error) res.sendStatus(500);
                 delete timeouts[messageId];
             })
-        }, 7000);
+        }, TIMEOUT_SECOND);
         timeouts[messageId] = currentTimeout;
 
         return res.sendStatus(200);
     } catch (e) {
-        console.error(e);
+        res.sendStatus(500);
     }
 })
 
 router.post('/response', function(req,res){
     const responses = JSON.parse(req.body.payload);
-    const act = responses.actions[0].action_id;
-    // const roleId = responses.actions[0].value;
-    const {roleId, messageId} = JSON.parse(responses.actions[0].value);
+    const act = responses.actions[0].name;
+    // const act = responses.actions[0].action_id; // commented because it works in Vio's Bot
+    const { roleId, messageId } = JSON.parse(responses.actions[0].value);
 
     if (messageId && timeouts[messageId]) {
         clearTimeout(timeouts[messageId]);
     }
 
-    const members = lookup_role(parseInt(roleId)+1);
+    const members = lookup_role(parseInt(roleId) + 1);
 
     if (act == 'approve'){
       res.send(`<@${responses.user.id}> has been take to fix the issues!`);
     
-    }else{
-      res.send(`<@${responses.user.id}> can't fix the problem! This alert will assign to ${members}`)
+    } else {
+      res.send(`<@${responses.user.id}> can't fix the problem! This alert will be assigned to ${members}`)
     }
 })
 
-function lookup_role(role_id=1) {
+function lookup_role(role_id = 1) {
   const role = roles[role_id];
-  console.log(role_id)
   const slack_id = [];
   for (let { id_slack } of role) {
       slack_id.push(`<@${id_slack}>`)
   }
   return slack_id;
-  
 }
 
-export default router
+export default router;
