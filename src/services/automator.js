@@ -1,13 +1,7 @@
 // TODO: Implement Ansible logic
 // TODO: Implement Notifier
-const {exec} = require('child_process');
-const { stdout, stderr } = require('process');
-
-module.exports = {
-    generatePlaybookLink
-}
-
-
+import {exec} from 'child_process';
+import { stdout, stderr } from 'process';
 
 function generatePlaybookLink(address,service){
     const templateString = `ansible-playbook -e device=${address} -e service=${service} ../playbooks/restart-service.yml`
@@ -22,3 +16,5 @@ function generatePlaybookLink(address,service){
     })
     return templateString
 }   
+
+export default generatePlaybookLink

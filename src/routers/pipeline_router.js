@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';
 
 // initialize router
-let router = new express.Router();
+const router =  express.Router();
 
 // import service
-const addressCheker = require('../services/addressChecker');
-const automator = require ('../services/automator')
+import addressCheker from '../services/addressChecker.js';
+import automator from '../services/automator.js'
 
 router.post('', automatePlaybook)
 
@@ -27,3 +27,5 @@ async function automatePlaybook (req, res) {
     return res.send(generatedLink)
 
 }
+
+export default router

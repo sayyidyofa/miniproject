@@ -1,8 +1,3 @@
-module.exports = {
-    checkAddress
-}
-
-
 // dummy list ip
 const daftarIP = ['127','128','129']
 
@@ -18,3 +13,5 @@ function checkAddress(address){
         return false
     }
 } 
+
+export default checkAddress
