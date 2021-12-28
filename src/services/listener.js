@@ -28,12 +28,12 @@ router.post('/', async (req, res)=>{
             // Call automator and pass the parameter
 
             // 1. Check if the address is listing
-            const checkStatus = await checkAddress(from)
+            const checkStatus = await checkAddress(from);
             if (!checkStatus) {
                 return res.status(400).send({
                     message: 'Address is not registered as a valid domain'
                 });
-              
+            }
             // 2. Check if error type defined
             const checkError = checkErrorType(type)
             if (!checkError) {
