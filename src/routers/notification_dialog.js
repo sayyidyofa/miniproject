@@ -1,14 +1,16 @@
 import request from 'request';
 import express from 'express';
+import dotenv from 'dotenv';
 import { createRequire } from "module";
+
+dotenv.config()
+const url = process.env.WEBHOOK_URL;
 const require = createRequire(import.meta.url);
-
 const roles = require('../services/roles.json');
-
-
 const router =  express.Router();
+// const url = process.env.WEBHOOK_URL;
 //Endpoint slack webhooks for rpa_team channels
-const url = 'https://hooks.slack.com/services/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';
+
 
 router.post('/escalation_dialog', function(req,res){
     const error_message = req.body.message; // message will be send to chat
@@ -52,24 +54,35 @@ router.post('/escalation_dialog', function(req,res){
         headers : { 'Content-type' : 'application/json' },
         url,
         form : {payload: JSON.stringify(payload_block)}
-    }, (error, res, body) => console.log(error, body, res.statusCode));
+    }, (error, res, body) => console.log(error, body));
 
+    res.send('SUCCESS');
 
 })
 
+
+
 router.post('/response', function(req,res){
     const responses = JSON.parse(req.body.payload);
-    const act = responses.actions[0].action_id;
+    const act = responses.actions[0].name;
     const roleId = responses.actions[0].value;
 
     const members = lookup_role(parseInt(roleId)+1);
+    const is_same_user = user_checking(roleId, responses.user.id)
 
-    if (act == 'approve'){
-      res.send(`<@${responses.user.id}> has been take to fix the issues!`);
-    
+
+    if (is_same_user){
+        console.log(responses);
+        if (act == 'approve'){
+            res.send(`<@${responses.user.id}> has been take to fix the issues!`);
+          }else{
+            res.send(`<@${responses.user.id}> can't fix the problem! This alert will assign to ${members}`)
+          }
     }else{
-      res.send(`<@${responses.user.id}> can't fix the problem! This alert will assign to ${members}`)
+        res.send(`<@${responses.user.id}> You dont have permissions to take this error`);
+        // sendAlert();
     }
+    
 })
 
 function lookup_role(role_id=1){
@@ -82,4 +95,27 @@ function lookup_role(role_id=1){
   
 }
 
+function user_checking(role_id=1, user_action){
+  const role = roles[role_id];
+  const validation = [];
+  for (var user in role){
+    if (user_action==role[user].id_slack){
+        validation.push(true)
+    }else{
+        validation.push(false)
+    }
+  }
+
+  var final_validation =""
+  if (validation.includes(true)){
+      final_validation = true
+  }else{
+      final_validation = false
+  }
+
+  return final_validation;
+
+}
+
+// sendAlert();
 export default router
