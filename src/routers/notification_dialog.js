@@ -69,12 +69,14 @@ router.post('/escalation_dialog', function(req,res){
                     channel: 'C02S28LEWRJ',
                     text: `There is no response from ${members.join(' or ')}, this alert will be assigned to <@U02SPNE5SHE>`
                 })}
-            }, (error, res, body) => console.log(error, body, res.statusCode)
-                )
+            }, (error, res, body) => {
+                console.log(error, body, res.statusCode)
+                // delete timeouts[messageId];
+            })
         }, 7000);
         timeouts[messageId] = currentTimeout;
 
-        // return res.sendStatus(200);
+        return res.sendStatus(200);
     } catch (e) {
         console.error(e);
     }
