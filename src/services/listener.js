@@ -66,7 +66,7 @@ router.post('/', async (req, res)=>{
             },(error, res, body) => console.log(error, body, res.statusCode));
             
             // 3. jalankan automator untuk bikin script
-            const generatedLink = automator(address, errorType)
+            const generatedLink = automator(from, type)
         }else{
             res.status(400).send({message:`[${required}] is required.`})
         }
