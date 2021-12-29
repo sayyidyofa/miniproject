@@ -5,4 +5,4 @@ COPY ./* ./
 
 EXPOSE 80
 
-CMD npm install express && node testApp.js
+CMD npm i && node testApp.js
