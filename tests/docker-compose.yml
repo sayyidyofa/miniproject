@@ -1,0 +1,29 @@
+version: '3'
+services:
+  worker1:
+    image: testapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: worker1
+    ports:
+      - "3001:4444"
+    restart: on-failure
+  worker2:
+    image: testapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: worker2
+    ports:
+      - "3002:4444"
+    restart: on-failure
+  worker3:
+    image: testapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: worker3
+    ports:
+      - "3003:4444"
+    restart: on-failure
