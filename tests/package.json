@@ -1,0 +1,9 @@
+{
+  "name": "testapp",
+  "version": "1.0.0",
+  "main": "testApp.js",
+  "type": "module",
+  "dependencies": {
+    "express": "^4.17.2"
+  }
+}
