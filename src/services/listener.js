@@ -1,5 +1,9 @@
 // TODO: Implement simple http listener for receiving data from parser
 import express from 'express';
+import request from 'request';
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 // import service
 import checkAddress from '../services/addressChecker.js';

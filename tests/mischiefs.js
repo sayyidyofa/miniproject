@@ -4,13 +4,19 @@ import { writeFileSync } from 'fs';
 import {cwd} from "process";
 
 // Implement simple json file writer
-function editImportantFile(key, value) {
-    writeFileSync('important_file', `${key}=${value}`);
+function editImportantFile(isManual) {
+    isManual
+        ? writeFileSync('important_file', 'healthy=false\nmanual_config=valid')
+        : writeFileSync('important_file', 'healthy=true\nmanual_config=invalid');
 }
 
 // Implement error trigger
 export function errorTrigger() {
-    editImportantFile('healthy', false);
+    editImportantFile(false);
+}
+
+export function errorTriggerManual() {
+    editImportantFile(true);
 }
 
 // Implement error trigger scheduler (add)
