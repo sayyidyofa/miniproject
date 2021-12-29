@@ -1,18 +1,20 @@
 import request from 'request';
 import express from 'express';
+import dotenv from 'dotenv';
 import { createRequire } from "module";
 import { v4 as uuid } from 'uuid';
-import dotenv from 'dotenv';
-const require = createRequire(import.meta.url);
 
-const roles = require('../services/roles.json');
 
-const router =  express.Router();
 dotenv.config()
-//Endpoint slack webhooks for rpa_team channels
-const url = process.env.WEBHOOK_URL_RPA_TEAM;
+const router =  express.Router();
+const require = createRequire(import.meta.url);
+const roles = require('../services/roles.json');
 const TIMEOUT_SECOND = 60 * 1000;
 const timeouts = {};
+var payload_block ={}
+
+//Endpoint slack webhooks for rpa_team channels
+const url = process.env.WEBHOOK_URL;
 
 router.post('/escalation_dialog', function(req,res){
     try {
@@ -24,7 +26,7 @@ router.post('/escalation_dialog', function(req,res){
         const members = lookup_role(roleId);
         const value = JSON.stringify({ roleId, messageId });
 
-        const payload_block = {
+        payload_block = {
             "channel" : "C02S28LEWRJ",
             "type": "interactive_message",
             "text" : "RPA Reporting",
@@ -64,7 +66,7 @@ router.post('/escalation_dialog', function(req,res){
         });
 
         const currentTimeout = setTimeout(() => {
-            const supervisor = lookup_role(roleId + 1);
+            const supervisor = lookup_role(parseInt(roleId) + 1);
             request.post({
                 headers : { 'Content-type' : 'application/json' },
                 url,
@@ -90,20 +92,29 @@ router.post('/escalation_dialog', function(req,res){
 router.post('/response', function(req,res){
     const responses = JSON.parse(req.body.payload);
     const act = responses.actions[0].name;
-    // const act = responses.actions[0].action_id; // commented because it works in Vio's Bot
     const { roleId, messageId } = JSON.parse(responses.actions[0].value);
+
+    const members = lookup_role(parseInt(roleId)+1);
+    const is_same_user = user_checking(roleId, responses.user.id)
 
     if (messageId && timeouts[messageId]) {
         clearTimeout(timeouts[messageId]);
     }
+    // const act = responses.actions[0].action_id; // commented because it works in Vio's Bot)
 
-    const members = lookup_role(parseInt(roleId) + 1);
-
-    if (act == 'approve'){
-      res.send(`<@${responses.user.id}> has been take to fix the issues!`);
-    
-    } else {
-      res.send(`<@${responses.user.id}> can't fix the problem! This alert will be assigned to ${members}`)
+    if (is_same_user){
+        if (act == 'approve'){
+            res.send(`<@${responses.user.id}> has been take to fix the issues!`);
+          }else{
+            res.send(`<@${responses.user.id}> can't fix the problem! This alert will assign to ${members}`)
+          }
+    }else{
+        res.send(`<@${responses.user.id}> You dont have permissions to take this error`);
+        request.post({
+            headers : { 'Content-type' : 'application/json' },
+            url,
+            form : {payload: JSON.stringify(payload_block)}
+        }, (error, res, body) => console.log(error, body));
     }
 })
 
@@ -116,4 +127,23 @@ function lookup_role(role_id = 1) {
   return slack_id;
 }
 
-export default router;
+function user_checking(role_id=1, user_action){
+  const role = roles[role_id];
+  const validation = [];
+  for (var user in role){
+    if (user_action==role[user].id_slack){
+        validation.push(true)
+    }else{
+        validation.push(false)
+    }
+  }
+
+  if (validation.includes(true)){
+      return true
+  }else{
+      return false
+  }
+
+}
+
+export default router
