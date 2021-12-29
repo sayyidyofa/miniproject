@@ -6,9 +6,8 @@ dotenv.config();
 
 
 // import service
-import checkAddress from '../services/addressChecker.js';
 import automator from './automator.js';
-import { checkRequired, checkErrorType } from '../utils/helpers.js';
+import { checkRequired, checkErrorType, ipAddressChecker } from '../utils/helpers.js';
 
 // This is the router from express
 const router = express.Router();
@@ -32,9 +31,9 @@ router.post('/', async (req, res)=>{
             // Call automator and pass the parameter
 
             // 1. Check if the address is listing
-            const checkStatus = await checkAddress(from);
+            const checkStatus = ipAddressChecker(from);
             if (!checkStatus) {
-                return res.status(400).send({
+                return res.status(404).send({
                     message: 'Address is not registered as a valid domain'
                 });
             }

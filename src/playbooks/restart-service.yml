@@ -1,19 +1,29 @@
-# ansible-playbook -e device=<your-input> -e service=<service-input> -e remote_user=<remote-user> -e is_pacemaker=<boolean> <directory-jump>/restart-service.yml
-# ansible-playbook -e device=13.229.90.181 -e service=WebServer -e remote_user=ec2-user -e is_pacemaker=true ../playbooks/restart-service.yml
+# ansible-playbook -e device=<your-input> -e service=<service-input> -e type=<service | pacemaker | docker> -e image=<for-docker-only> <directory-jump>/restart-service.yml
+# ansible-playbook -e device=13.229.90.181 -e service=WebServer -e type=docker -e image=nginx ../playbooks/restart-service.yml
 
 - name: Restart service with host using external variable
   hosts: "{{ device }}"
-  remote_user: "{{ remote_user }}"
   tasks:
     - name: Restarting Service {{ service }}.
       ansible.builtin.service:
         name: "{{ service }}"
         state: restarted
-      when: not is_pacemaker | bool
+      when: type == "service"
     
     - name: Restarting Pacemaker Resource {{ service }}.
       become: true
       community.general.pacemaker_cluster:
         node: "{{ service }}"
         state: restart
-      when: is_pacemaker
+      when: type == "pacemaker"
+
+    - name: Restarting {{ service }} Docker Container.
+      become: true
+      community.docker.docker_container:
+        name: "{{ service }}"
+        image: "{{ image }}"
+        ports:
+          - 8080:8080 
+        state: started
+        restart: yes
+      when: type == "docker"
