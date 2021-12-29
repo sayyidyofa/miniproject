@@ -1,5 +1,6 @@
 // dummy list ip
-const daftarIP = ['127','128','129']
+// perlu check langsung ke file inventory terus diubah jadi "daftarIP" dalam bentuk array
+const daftarIP = ['127', '128', '129', '13.229.90.181']
 
 function checkAddress(address){
 
