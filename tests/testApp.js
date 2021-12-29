@@ -87,8 +87,9 @@ const port = 4444;
 const body =
     `<div>Hello there. I am working and healthy :)</div>
 <br><button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:4444/break', false); r.send(null);location.reload()">Break me</button>
-&nbsp <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:4444/addcron', false); r.send(null);location.reload()">Add cronjob</button> 
-&nbsp <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:4444/removecron', false); r.send(null);location.reload()">Remove cronjob</button>`;
+&nbsp; <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:4444/breakManual', false); r.send(null);location.reload()">Break me (solve manually)</button>
+&nbsp; <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:4444/addcron', false); r.send(null);location.reload()">Add cronjob</button> 
+&nbsp; <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:4444/removecron', false); r.send(null);location.reload()">Remove cronjob</button>`;
 
 httpService.get('/', (req, res) => {
     // main logic
