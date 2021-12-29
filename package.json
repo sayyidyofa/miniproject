@@ -9,7 +9,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/main.js",
-    "dummy": "cd tests && node testApp.js"
+    "dummy": "cd tests && node testApp.js",
+    "tunnel": "npx localtunnel --port 3000 --subdomain=svc-two-automator"
   },
   "devDependencies": {
     "eslint": "^8.5.0",

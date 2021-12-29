@@ -32,7 +32,7 @@ router.post('/escalation_dialog', function(req,res){
             "text" : "RPA Reporting",
             "attachments": [
                 {
-                    "text": `[ERROR] Hi, developer ${members}. ${error_message} ${service}, would you like to fix it?`,
+                    "text": `[ERROR] Hi, developer ${members}.\nError message: ${error_message}\nError location: ${service}\n\nWould you like to fix it?`,
                     "attachment_type": "default",
                     "callback_id": "selection_action",
                     "color": "#FF0000",
@@ -97,18 +97,19 @@ router.post('/response', function(req,res){
     const members = lookup_role(parseInt(roleId)+1);
     const is_same_user = user_checking(roleId, responses.user.id)
 
-    if (messageId && timeouts[messageId]) {
-        clearTimeout(timeouts[messageId]);
-    }
     // const act = responses.actions[0].action_id; // commented because it works in Vio's Bot)
 
     if (is_same_user){
+        if (messageId && timeouts[messageId]) {
+            clearTimeout(timeouts[messageId]);
+            delete timeouts[messageId];
+        }
         if (act == 'approve'){
             res.send(`<@${responses.user.id}> has been take to fix the issues!`);
           }else{
             res.send(`<@${responses.user.id}> can't fix the problem! This alert will assign to ${members}`)
           }
-    }else{
+    } else {
         res.send(`<@${responses.user.id}> You dont have permissions to take this error`);
         request.post({
             headers : { 'Content-type' : 'application/json' },
