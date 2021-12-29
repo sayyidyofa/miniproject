@@ -2,7 +2,7 @@
 import express from 'express';
 import {readFileSync, writeFileSync} from 'fs';
 import { request } from 'http';
-import {addErrorTriggerScheduler, errorTrigger, removeErrorTriggerScheduler} from "./mischiefs.js";
+import {addErrorTriggerScheduler, errorTrigger, errorTriggerManual, removeErrorTriggerScheduler} from "./mischiefs.js";
 
 // Implement simple file reader
 // Returns boolean
@@ -19,10 +19,23 @@ function readImportantFile() {
         [1]
 }
 
+function readImportantFileManualConfig() {
+    let rawData = readFileSync('important_file');
+    const keyword = 'manual_config';
+    return rawData
+        .toString()
+        .split('\n')
+        .map(el => el.split('='))
+        .find(el => el[0] === keyword)
+        [1]
+}
+
 // Implement important_file default setter
 // Replace the value in important file to default: healthy=true
+// Notice that it does not reset the manual config value
 function resetImportantFile() {
-    writeFileSync('important_file', 'healthy=true');
+    const currentManualConfigValue = readImportantFileManualConfig();
+    writeFileSync('important_file', `healthy=true\nmanual_config=${currentManualConfigValue}`);
 }
 
 // Implement simple error reporter
@@ -80,7 +93,8 @@ const body =
 httpService.get('/', (req, res) => {
     // main logic
     const isAppHealthy = readImportantFile();
-    if (isAppHealthy === "true") {
+    const isManualConfigValid = readImportantFileManualConfig();
+    if (isAppHealthy === "true" && isManualConfigValid === "valid") {
         res.send(body);
     } else {
         reportErrorToBackend();
@@ -91,6 +105,11 @@ httpService.get('/', (req, res) => {
 // Failure endpoint. Fire a request here to break the app
 httpService.get('/break', (req, res) => {
     errorTrigger();
+    res.send('success');
+});
+
+httpService.get('/breakManual', (req, res) => {
+    errorTriggerManual();
     res.send('success');
 });
 
