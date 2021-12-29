@@ -9,6 +9,8 @@ services:
     ports:
       - "3001:4444"
     restart: on-failure
+    environment:
+      - HOST_PORT=3001
   worker2:
     image: testapp
     build:
@@ -18,6 +20,8 @@ services:
     ports:
       - "3002:4444"
     restart: on-failure
+    environment:
+      - HOST_PORT=3002
   worker3:
     image: testapp
     build:
@@ -27,3 +31,5 @@ services:
     ports:
       - "3003:4444"
     restart: on-failure
+    environment:
+      - HOST_PORT=3003
