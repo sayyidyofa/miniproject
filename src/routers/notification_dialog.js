@@ -16,7 +16,11 @@ var payload_block ={}
 //Endpoint slack webhooks for rpa_team channels
 const url = process.env.WEBHOOK_URL;
 
-router.post('/escalation_dialog', function(req,res){
+router.post('/escalation_dialog', escalation_dialog)
+
+router.post('/response', response)
+
+async function escalation_dialog(req,res){
     try {
         const error_message = req.body.message; // message will be send to chat
         const service = req.body.service;
@@ -87,9 +91,9 @@ router.post('/escalation_dialog', function(req,res){
     } catch (e) {
         res.sendStatus(500);
     }
-})
+}
 
-router.post('/response', function(req,res){
+function response(req,res) {
     const responses = JSON.parse(req.body.payload);
     const act = responses.actions[0].name;
     const { roleId, messageId } = JSON.parse(responses.actions[0].value);
@@ -117,7 +121,8 @@ router.post('/response', function(req,res){
             form : {payload: JSON.stringify(payload_block)}
         }, (error, res, body) => console.log(error, body));
     }
-})
+
+}
 
 function lookup_role(role_id = 1) {
   const role = roles[role_id];
