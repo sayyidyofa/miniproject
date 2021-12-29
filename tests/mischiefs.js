@@ -6,8 +6,8 @@ import {cwd} from "process";
 // Implement simple json file writer
 function editImportantFile(isManual) {
     isManual
-        ? writeFileSync('important_file', 'healthy=false\nmanual_config=valid')
-        : writeFileSync('important_file', 'healthy=true\nmanual_config=invalid');
+        ? writeFileSync('important_file', 'healthy=true\nmanual_config=invalid')
+        : writeFileSync('important_file', 'healthy=false\nmanual_config=valid');
 }
 
 // Implement error trigger
