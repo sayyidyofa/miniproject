@@ -7,7 +7,7 @@ import { WebClient } from '@slack/web-api';
 
 
 dotenv.config()
-const router =  express.Router();
+const notificationRouter =  express.Router();
 const require = createRequire(import.meta.url);
 const roles = require('../services/roles.json');
 const TIMEOUT_SECOND = 60 * 1000;
@@ -19,9 +19,9 @@ const url = process.env.WEBHOOK_URL;
 
 const client = new WebClient(process.env.BOT_TOKEN);
 
-router.post('/escalation_dialog', escalation_dialog)
+notificationRouter.post('/escalation_dialog', escalation_dialog)
 
-router.post('/response', response)
+notificationRouter.post('/response', response)
 
 async function escalation_dialog(req,res){
     try {
@@ -141,4 +141,4 @@ function user_checking(role_id, user_action){
   return false;
 }
 
-export default router
+export  {notificationRouter, escalation_dialog} 

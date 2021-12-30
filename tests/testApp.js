@@ -84,13 +84,14 @@ function reportErrorToBackend() {
 const httpService = express();
 const port = 4444;
 const HOST_PORT = process.env.HOST_PORT || port; // needed for docker-compose services
+const HOST_ADDRESS = process.env.HOST_ADDRESS || 'localhost'; // Alamat tombol break me di localhost vs production harusnya beda
 
 const body =
     `<div>Hello there. I am working and healthy :)</div>
-<br><button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:${HOST_PORT}/break', false); r.send(null);location.reload()">Break me</button>
-&nbsp; <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:${HOST_PORT}/breakManual', false); r.send(null);location.reload()">Break me (solve manually)</button>
-&nbsp; <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:${HOST_PORT}/addcron', false); r.send(null);location.reload()">Add cronjob</button> 
-&nbsp; <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://localhost:${HOST_PORT}/removecron', false); r.send(null);location.reload()">Remove cronjob</button>`;
+<br><button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://${HOST_ADDRESS}:${HOST_PORT}/break', false); r.send(null);location.reload()">Break me</button>
+&nbsp; <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://${HOST_ADDRESS}:${HOST_PORT}/breakManual', false); r.send(null);location.reload()">Break me (solve manually)</button>
+&nbsp; <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://${HOST_ADDRESS}:${HOST_PORT}/addcron', false); r.send(null);location.reload()">Add cronjob</button> 
+&nbsp; <button onclick="let r = new XMLHttpRequest(); r.open('GET', 'http://${HOST_ADDRESS}:${HOST_PORT}/removecron', false); r.send(null);location.reload()">Remove cronjob</button>`;
 
 httpService.get('/', (req, res) => {
     // main logic
