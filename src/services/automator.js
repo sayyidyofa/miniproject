@@ -2,13 +2,13 @@
 import { exec } from 'child_process';
 
 // perlu implemen exec dalam bentuk async await
-function generatePlaybookLink(address, service){
+function generatePlaybookLink(address, service) {
     const templateString = `
         ansible-playbook \
         -e device=${address} \
         -e service=${service} \
         -e type=docker \
-        -e image=nginx \
+        -e image=testapp \
         src/playbooks/restart-service.yml`;
     exec(templateString, (error, stdout, stderr) => {
         if(error){

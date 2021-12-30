@@ -77,7 +77,7 @@ async function escalation_dialog(req,res){
                 form : {
                     payload: JSON.stringify({
                         channel: 'C02S28LEWRJ',
-                        text: `There is no response from ${members.join(' or ')}, this alert will be assigned to <${supervisor}>`
+                        text: `There is no response from ${members.join(' or ')}, this alert will be assigned to ${supervisor}`
                     })
                 }
             }, (error, res, body) => {
@@ -113,7 +113,8 @@ function response(req,res) {
           }else{
             res.send(`<@${responses.user.id}> can't fix the problem! This alert will assign to ${members}`)
           }
-    } else {
+    }
+    else {
         res.send(`<@${responses.user.id}> You dont have permissions to take this error`);
         request.post({
             headers : { 'Content-type' : 'application/json' },
@@ -133,23 +134,12 @@ function lookup_role(role_id = 1) {
   return slack_id;
 }
 
-function user_checking(role_id=1, user_action){
+function user_checking(role_id, user_action){
   const role = roles[role_id];
-  const validation = [];
-  for (var user in role){
-    if (user_action==role[user].id_slack){
-        validation.push(true)
-    }else{
-        validation.push(false)
-    }
+  for (let { id_slack } of role){
+    if (user_action == id_slack) return true;
   }
-
-  if (validation.includes(true)){
-      return true
-  }else{
-      return false
-  }
-
+  return false;
 }
 
 export default router
