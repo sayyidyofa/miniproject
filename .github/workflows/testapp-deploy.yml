@@ -12,24 +12,11 @@ jobs:
       with:
         node-version: '16.13.1'
     - uses: actions/checkout@v2
-    - name: Update Worker 1 HOST_ADDRESS in docker-compose.yml
-      uses: fjogeleit/yaml-update-action@master
-      with:
-        valueFile: './tests/docker-compose.yml'
-        propertyPath: 'services.worker1.environment[1]'
-        value: HOST_ADDRESS=${{ secrets.SERVER_IP }}
-    - name: Update Worker 2 HOST_ADDRESS in docker-compose.yml
-      uses: fjogeleit/yaml-update-action@master
-      with:
-        valueFile: './tests/docker-compose.yml'
-        propertyPath: 'services.worker2.environment[1]'
-        value: HOST_ADDRESS=${{ secrets.SERVER_IP }}
-    - name: Update Worker 3 HOST_ADDRESS in docker-compose.yml
-      uses: fjogeleit/yaml-update-action@master
-      with:
-        valueFile: './tests/docker-compose.yml'
-        propertyPath: 'services.worker3.environment[1]'
-        value: HOST_ADDRESS=${{ secrets.SERVER_IP }}
+    - name: Write .env file and use production-mode docker-compose file
+      run: | 
+        echo -e 'HOST_ADDRESS=${{ secrets.SERVER_IP }}' > ./tests/.env
+        rm ./tests/docker-compose.yml
+        mv ./tests/docker-compose.prod.yml ./tests/docker-compose.yml
     - name: Install Rsync
       run: sudo apt update && sudo apt install rsync
     - name: Create rsync exclude.txt
