@@ -41,4 +41,4 @@ jobs:
         host: ${{ secrets.SERVER_HOSTNAME }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: cd tests && docker-compose down && docker-compose build --no-cache && docker-compose up
+        script: cd miniproject/tests && docker-compose down && docker-compose build --no-cache && docker-compose up
