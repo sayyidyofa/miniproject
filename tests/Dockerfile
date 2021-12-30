@@ -1,5 +1,7 @@
 FROM node
 
+RUN apt update && apt install vim nano -y
+
 WORKDIR /testapp
 COPY ./* ./
 
