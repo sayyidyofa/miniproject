@@ -48,7 +48,7 @@ router.post('/', async (req, res)=>{
                         "type": "section",
                         "text": {
                                     "type": "mrkdwn",
-                                    "text": `[ERROR-${timestamp}] ${type} from service/IP ${ip+(port?":"+port:"")} `
+                                    "text": `[ERROR-${timestamp}] ${type} from service ${service} at ${ip+(port?":"+port:"")}`
                                 },
                         "block_id": "alert_error"
                     }]
@@ -64,7 +64,7 @@ router.post('/', async (req, res)=>{
             // automate if error type is defined in '../utils/error_type'
             const auto = isAutoByErrorType(type)
             if (auto) {
-                automator(ip, service, type, port,timestamp)
+                await automator(ip, service, port);
             } else {
                 // call escalation
             }
