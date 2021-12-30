@@ -3,6 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { createRequire } from "module";
 import { v4 as uuid } from 'uuid';
+import { WebClient } from '@slack/web-api';
 
 
 dotenv.config()
@@ -15,6 +16,8 @@ var payload_block ={}
 
 //Endpoint slack webhooks for rpa_team channels
 const url = process.env.WEBHOOK_URL;
+
+const client = new WebClient(process.env.BOT_TOKEN);
 
 router.post('/escalation_dialog', escalation_dialog)
 
@@ -31,14 +34,15 @@ async function escalation_dialog(req,res){
         const value = JSON.stringify({ roleId, messageId });
 
         payload_block = {
-            "channel" : "C02S28LEWRJ",
+            "channel" : process.env.channel_id,
             "type": "interactive_message",
             "text" : "RPA Reporting",
             "attachments": [
                 {
-                    "text": `[ERROR] Hi, developer ${members}.\nError message: ${error_message}\nError location: ${service}\n\nWould you like to fix it?`,
+                    "text": `[ERROR] Developer ${members}.\nError message: ${error_message}\nError location: ${service}\n\nWould you like to fix it?`,
                     "attachment_type": "default",
                     "callback_id": "selection_action",
+                    "fallback":` ${error_message} location : ${service}`,
                     "color": "#FF0000",
                     "actions": [
                         {
@@ -61,22 +65,21 @@ async function escalation_dialog(req,res){
                 }
         ]};    
 
-        request.post({
-            headers : { 'Content-type' : 'application/json' },
-            url,
-            form : {payload: JSON.stringify(payload_block)}
-        }, (error, res, body) => {
-            if (error) res.sendStatus(500);
-        });
+        const result_chat = await client.chat.postMessage(payload_block)
 
         const currentTimeout = setTimeout(() => {
             const supervisor = lookup_role(parseInt(roleId) + 1);
+            client.chat.delete({
+                channel : process.env.channel_id,
+                ts: result_chat.ts
+            })
             request.post({
                 headers : { 'Content-type' : 'application/json' },
                 url,
                 form : {
                     payload: JSON.stringify({
                         channel: 'C02S28LEWRJ',
+                        response_type: "ephemeral",
                         text: `There is no response from ${members.join(' or ')}, this alert will be assigned to ${supervisor}`
                     })
                 }
@@ -89,6 +92,7 @@ async function escalation_dialog(req,res){
 
         return res.sendStatus(200);
     } catch (e) {
+        console.log(e)
         res.sendStatus(500);
     }
 }
@@ -97,7 +101,7 @@ function response(req,res) {
     const responses = JSON.parse(req.body.payload);
     const act = responses.actions[0].name;
     const { roleId, messageId } = JSON.parse(responses.actions[0].value);
-
+    const fallback = responses.original_message.attachments[0].fallback;
     const members = lookup_role(parseInt(roleId)+1);
     const is_same_user = user_checking(roleId, responses.user.id)
 
@@ -109,18 +113,13 @@ function response(req,res) {
             delete timeouts[messageId];
         }
         if (act == 'approve'){
-            res.send(`<@${responses.user.id}> has been take to fix the issues!`);
+            res.send(`<@${responses.user.id}> has been take to fix the issues! [ERROR] ${fallback}`);
           }else{
-            res.send(`<@${responses.user.id}> can't fix the problem! This alert will assign to ${members}`)
+            res.send(`<@${responses.user.id}> can't fix the problem! This alert will assign to ${members}! [ERROR] ${fallback}`)
           }
     }
     else {
-        res.send(`<@${responses.user.id}> You dont have permissions to take this error`);
-        request.post({
-            headers : { 'Content-type' : 'application/json' },
-            url,
-            form : {payload: JSON.stringify(payload_block)}
-        }, (error, res, body) => console.log(error, body));
+        res.send({text:`<@${responses.user.id}> You dont have permissions to take this error`, replace_original:false});
     }
 
 }
