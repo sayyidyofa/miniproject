@@ -1,5 +1,5 @@
-# ansible-playbook -e device=<your-input> -e service=<service-input> -e type=<service | pacemaker | docker> -e image=<for-docker-only> <directory-jump>/restart-service.yml
-# ansible-playbook -e device=13.229.90.181 -e service=WebServer -e type=docker -e image=nginx ../playbooks/restart-service.yml
+# ansible-playbook -e device=<your-input> -e service=<service-input> -e type=<service | pacemaker | docker> -e image=<for-docker-only> -e docker-port=<for-docker-only> <directory-jump>/restart-service.yml
+# ansible-playbook -e device=13.229.90.181 -e service=WebServer -e type=docker -e image=nginx -e docker_port=3001 ../playbooks/restart-service.yml
 
 - name: Restart service with host using external variable
   hosts: "{{ device }}"
@@ -23,7 +23,11 @@
         name: "{{ service }}"
         image: "{{ image }}"
         ports:
-          - 3001-3003:4444
+          - "{{ docker_port }}:4444"
         state: started
+        restart_policy: on-failure
+        env:
+          HOST_PORT: "{{ docker_port }} "
+          HOST_ADDRESS: "{{ device }}"
         restart: yes
       when: type == "docker"
