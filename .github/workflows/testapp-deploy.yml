@@ -25,20 +25,6 @@ jobs:
         echo -e 'exclude-list.txt' >> exclude-list.txt
     - name: Adding Host key to know_hosts file
       run: mkdir -p ~/.ssh && ssh-keyscan -H ${{ secrets.SERVER_HOSTNAME }} >> ~/.ssh/known_hosts
-    - name: Debug
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_HOSTNAME }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: ls
-    - name: Stop docekr compose services over SSH
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_HOSTNAME }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: cd tests && docker-compose down
     - name: Deploy to staging Server via Rsync
       uses: AEnterprise/rsync-deploy@v1.0
       env:
@@ -55,4 +41,4 @@ jobs:
         host: ${{ secrets.SERVER_HOSTNAME }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: cd tests && docker-compose up --build -d
+        script: cd tests && docker-compose down && docker-compose build --no-cache && docker-compose up
