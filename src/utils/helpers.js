@@ -1,31 +1,34 @@
 // Add utility/helper functions here
 import { readFileSync } from 'fs';
 
-export { checkRequired, checkErrorType, ipAddressChecker }
+export { checkRequired, isAutoByErrorType, ipAddressChecker }
 
-function checkErrorType(errorType){
+function isAutoByErrorType(errorType){
     const rawData = readFileSync('./src/utils/error_type');
     const errorList = rawData.toString().split('\n')
 
-    const stringifiedAddress = String(errorType)
-    if (errorList.includes(stringifiedAddress)){
-        console.log(`'${stringifiedAddress}' is defined`)
+    const stringifiedErrorType = String(errorType)
+    if (errorList.includes(stringifiedErrorType)){
+        console.log(`'${stringifiedErrorType}' is handled by automator`)
         return true
     } else{
-        console.log(`error type '${stringifiedAddress}' is not defined`)
+        console.log(`'${stringifiedErrorType}' will be escalated`)
         return false
     }
 }
 
-function checkRequired(serviceType, address, timestamp){
+function checkRequired(log){
     const required = [];
-    if (!serviceType) {
+    if (!log.type) {
         required.push("type");
     }
-    if (!address) {
+    if (!log.service) {
+        required.push("service");
+    }
+    if (!log.from) {
         required.push("from");
     }
-    if (!timestamp) {
+    if (!log.timestamp) {
         required.push("timestamp");
     }
     return required
