@@ -20,8 +20,32 @@
             "id_slack" : "U02SPNE5SHE",
             "name" : "M. Randi",
             "nik" : "2101",
-            "posititon" : "dev-ops"
+            "posititon" : "dev-ops-engineer"
         }
 
+    ],
+    "3":
+    [
+        {
+            "id_slack" : "U02SC8N80V6",
+            "name" : "Vio Ayu O.",
+            "nik" : "21090",
+            "posititon" : "scrum-master"
+        },
+        {
+            "id_slack" : "U02SCL1TM4H",
+            "name" : "Bob Y.",
+            "nik" : "21190",
+            "posititon" : "product-owner"
+        }
+    ],
+    "4":
+    [
+        {
+            "id_slack": "U02RTNPFPE2",
+            "name" : "Faisa F",
+            "nik" : "21070",
+            "posititon" : "scrum-master"
+        }
     ]
 }
