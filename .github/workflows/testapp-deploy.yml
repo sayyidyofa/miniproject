@@ -12,8 +12,24 @@ jobs:
       with:
         node-version: '16.13.1'
     - uses: actions/checkout@v2
-    - name: Install Dependencies
-      run: npm install
+    - name: Update Worker 1 HOST_ADDRESS in docker-compose.yml
+      uses: fjogeleit/yaml-update-action@master
+      with:
+        valueFile: './tests/docker-compose.yml'
+        propertyPath: 'services.worker1.environment[1]'
+        value: HOST_ADDRESS=${{ secrets.SERVER_IP }}
+    - name: Update Worker 2 HOST_ADDRESS in docker-compose.yml
+      uses: fjogeleit/yaml-update-action@master
+      with:
+        valueFile: './tests/docker-compose.yml'
+        propertyPath: 'services.worker2.environment[1]'
+        value: HOST_ADDRESS=${{ secrets.SERVER_IP }}
+    - name: Update Worker 3 HOST_ADDRESS in docker-compose.yml
+      uses: fjogeleit/yaml-update-action@master
+      with:
+        valueFile: './tests/docker-compose.yml'
+        propertyPath: 'services.worker3.environment[1]'
+        value: HOST_ADDRESS=${{ secrets.SERVER_IP }}
     - name: Install Rsync
       run: sudo apt update && sudo apt install rsync
     - name: Create rsync exclude.txt
