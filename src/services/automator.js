@@ -4,7 +4,6 @@ import { exec } from 'child_process';
 import request from 'request';
 import dotenv from 'dotenv';
 import { isAutoByErrorType } from '../utils/helpers.js';
-import { escalation_dialog } from '../routers/notification_dialog.js';
 import report from './report.js';
 
 dotenv.config()

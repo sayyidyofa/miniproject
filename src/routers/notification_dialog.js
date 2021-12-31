@@ -37,7 +37,7 @@ async function escalation_dialog(error_message, service, roleId) {
             "text": "RPA Reporting",
             "attachments": [
                 {
-                    "text": `[ERROR] Developer ${members}.\nError message: ${error_message}\nError location: ${service}\n\nWould you like to fix it?`,
+                    "text": `[ERROR] Hi ${members.join(', ')} our system can't automatically handle this error.\nError message: ${error_message}\nError location: ${service}\n\nWould you like to fix it?`,
                     "attachment_type": "default",
                     "callback_id": "selection_action",
                     "fallback": ` ${error_message} location : ${service}`,
@@ -117,12 +117,12 @@ function response(req, res) {
             taken care of by <@${responses.user.id}>`)
         } else {
             res.send(`Troubleshooting Status:  [ERROR] ${fallback} can't be \ 
-            handled by <@${responses.user.id}>! This Problem will be escalated \
-            to Manager:${members}!`)
+            handled by <@${responses.user.id}>! This problem will be escalated \
+            to ${members}!`)
         }
     }
     else {
-        res.send({ text: `<@${responses.user.id}> You dont have permissions to take this error`, replace_original: false });
+        res.send({ text: `Sorry <@${responses.user.id}> but you dont have permissions to take this error`, replace_original: false });
     }
 
 }
