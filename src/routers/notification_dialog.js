@@ -7,12 +7,12 @@ import pkg from '@slack/web-api';
 const { WebClient } = pkg;
 
 dotenv.config()
-const notificationRouter =  express.Router();
+const notificationRouter = express.Router();
 const require = createRequire(import.meta.url);
 const roles = require('../services/roles.json');
 const TIMEOUT_SECOND = 60 * 1000;
 const timeouts = {};
-var payload_block ={}
+var payload_block = {}
 
 //Endpoint slack webhooks for rpa_team channels
 const url = process.env.WEBHOOK_URL;
@@ -23,7 +23,7 @@ notificationRouter.post('/escalation_dialog', escalation_dialog)
 
 notificationRouter.post('/response', response)
 
-async function escalation_dialog(req,res){
+async function escalation_dialog(req, res) {
     try {
         const error_message = req.body.message; // message will be send to chat
         const service = req.body.service;
@@ -34,15 +34,15 @@ async function escalation_dialog(req,res){
         const value = JSON.stringify({ roleId, messageId });
 
         payload_block = {
-            "channel" : process.env.channel_id,
+            "channel": process.env.channel_id,
             "type": "interactive_message",
-            "text" : "RPA Reporting",
+            "text": "RPA Reporting",
             "attachments": [
                 {
                     "text": `[ERROR] Developer ${members}.\nError message: ${error_message}\nError location: ${service}\n\nWould you like to fix it?`,
                     "attachment_type": "default",
                     "callback_id": "selection_action",
-                    "fallback":` ${error_message} location : ${service}`,
+                    "fallback": ` ${error_message} location : ${service}`,
                     "color": "#FF0000",
                     "actions": [
                         {
@@ -63,20 +63,21 @@ async function escalation_dialog(req,res){
                         }
                     ]
                 }
-        ]};    
+            ]
+        };
 
         const result_chat = await client.chat.postMessage(payload_block)
 
         const currentTimeout = setTimeout(() => {
             const supervisor = lookup_role(parseInt(roleId) + 1);
             client.chat.delete({
-                channel : process.env.channel_id,
+                channel: process.env.channel_id,
                 ts: result_chat.ts
             })
             request.post({
-                headers : { 'Content-type' : 'application/json' },
+                headers: { 'Content-type': 'application/json' },
                 url,
-                form : {
+                form: {
                     payload: JSON.stringify({
                         channel: 'C02S28LEWRJ',
                         response_type: "ephemeral",
@@ -98,29 +99,32 @@ async function escalation_dialog(req,res){
     }
 }
 
-function response(req,res) {
+function response(req, res) {
     //function to received response from slack 
 
     const responses = JSON.parse(req.body.payload);
     const act = responses.actions[0].name;
     const { roleId, messageId } = JSON.parse(responses.actions[0].value);
     const fallback = responses.original_message.attachments[0].fallback;
-    const members = lookup_role(parseInt(roleId)+1);
+    const members = lookup_role(parseInt(roleId) + 1);
     const is_same_user = user_checking(roleId, responses.user.id)
 
-    if (is_same_user){
+    if (is_same_user) {
         if (messageId && timeouts[messageId]) {
             clearTimeout(timeouts[messageId]);
             delete timeouts[messageId];
         }
-        if (act == 'approve'){
-            res.send(`<@${responses.user.id}> has been take to fix the issues! [ERROR] ${fallback}`);
-          }else{
-            res.send(`<@${responses.user.id}> can't fix the problem! This alert will assign to ${members}! [ERROR] ${fallback}`)
-          }
+        if (act == 'approve') {
+            res.send(`Troubleshooting Status: [ERROR] ${fallback} will be \
+            taken care of by <@${responses.user.id}>`)
+        } else {
+            res.send(`Troubleshooting Status:  [ERROR] ${fallback} can't be \ 
+            handled by <@${responses.user.id}>! This Problem will be escalated \
+            to Manager:${members}!`)
+        }
     }
     else {
-        res.send({text:`<@${responses.user.id}> You dont have permissions to take this error`, replace_original:false});
+        res.send({ text: `<@${responses.user.id}> You dont have permissions to take this error`, replace_original: false });
     }
 
 }
@@ -128,22 +132,22 @@ function response(req,res) {
 function lookup_role(role_id = 1) {
     //function to search user that define in post request by role_id (read from file roles.json)
 
-  const role = roles[role_id];
-  const slack_id = [];
-  for (let { id_slack } of role) {
-      slack_id.push(`<@${id_slack}>`)
-  }
-  return slack_id;
+    const role = roles[role_id];
+    const slack_id = [];
+    for (let { id_slack } of role) {
+        slack_id.push(`<@${id_slack}>`)
+    }
+    return slack_id;
 }
 
-function user_checking(role_id, user_action){
+function user_checking(role_id, user_action) {
     //function user checking (compare between user should be take action and (real) take action)
 
-  const role = roles[role_id];
-  for (let { id_slack } of role){
-    if (user_action == id_slack) return true;
-  }
-  return false;
+    const role = roles[role_id];
+    for (let { id_slack } of role) {
+        if (user_action == id_slack) return true;
+    }
+    return false;
 }
 
-export  {notificationRouter, escalation_dialog} 
+export { notificationRouter, escalation_dialog } 
