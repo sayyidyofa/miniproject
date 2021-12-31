@@ -16,7 +16,7 @@ async function sendReport(ip, service, port, type, timestamp, status){
         let text_send = "";
 
         // select text based on status value
-        if (status === "error" || status === "escalate" ) {
+        if (status === "error" ) {
             text_send = text_error
         }
         if (status === "success") {
@@ -39,24 +39,14 @@ async function sendReport(ip, service, port, type, timestamp, status){
                 }]
             }]
         });
-        // this function called if the error cannot be solved by RPA (default role: 1)
-        if (status === "escalate") {
-            const location = `${ip}:${port}`;
-            escalation_dialog(text_error,location,1)
-            return 0
-        }
         // send the report
         request.post({
             url,
             form: { payload }
         }, (error, res, body) => {
             // console.log(error, body, res.statusCode)
-            // send offering for solving if RPA failed (default role: 1)
-            if (status === "failed") {
-                const location = `${ip}:${port}`;
-                escalation_dialog(text_failed,location,1)
-            }
         });
+        return 1
     } catch (error) {
         console.log(error)
     }

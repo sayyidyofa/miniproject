@@ -3,8 +3,10 @@ import util from 'util';
 import { exec } from 'child_process';
 import request from 'request';
 import dotenv from 'dotenv';
-import { isAutoByErrorType } from '../utils/helpers.js';
+
 import report from './report.js';
+import { isAutoByErrorType } from '../utils/helpers.js';
+import { escalation_dialog } from '../routers/notification_dialog.js';
 
 dotenv.config()
 const url = process.env.WEBHOOK_URL;
@@ -17,7 +19,7 @@ async function generatePlaybookLink(ip, service, port, type, timestamp) {
         report(ip, service, port, type, timestamp,"error")
 
         // automate if error type is defined in '../utils/error_type'
-        const auto = await isAutoByErrorType(type)
+        const auto = isAutoByErrorType(type)
         if (auto) {
             // It's not working! Help!!
             // const templateString = `
@@ -35,7 +37,7 @@ async function generatePlaybookLink(ip, service, port, type, timestamp) {
                 const { stdout, stderr } = await asyncExec(templateString);
                 if (stdout) {
                     request.get(`http://${ip}:${port}/`, (error, res, body) => {
-                        const status = res.statusCode
+                        const status = res.statusCode || 500
                         if (status == 200) {
                             isHealth = true
                         }
@@ -43,7 +45,11 @@ async function generatePlaybookLink(ip, service, port, type, timestamp) {
                 }
                 if (stderr) {
                     // TODO: escalate 
-                    report(ip, service, port, type, timestamp,"failed")
+                    // There is some error. RPA is not working. (default role: 1)
+                    const location = `${ip}:${port}`;
+                    const text_error = `*${type}* from service *${service}* at *${ip + (port ? ":" + port : "")}*.\n`+
+                        `There is an error while running the RPA. Please look at me`;
+                    escalation_dialog(text_error, location, 1)
                     console.error(stderr);
                     break;
                 }
@@ -53,14 +59,24 @@ async function generatePlaybookLink(ip, service, port, type, timestamp) {
             if (isHealth) {
                 report(ip, service, port, type, timestamp,"success")
             }else{
-                // sendEscalation
-                report(ip, service, port, type, timestamp,"failed")
+                report(ip, service, port, type, timestamp,"failed").then(()=>{
+                    // sendEscalation after failed (default role: 1)
+                    const location = `${ip}:${port}`;
+                    const text_failed = `[:fire:]Service *${service}* at *${ip}:${port}* still error after 3 times automatic restart\n${new Date()}.`;
+                    escalation_dialog(text_failed,location,1)
+                })
             }
         } else {
+            // sendEscalation when error type is not for RPA (default role: 1)
             report(ip, service, port, type, timestamp,"escalate")
+            const location = `${ip}:${port}`;
+            const text_error = `*${type}* from service *${service}* at *${ip+(port?":"+port:"")}*`;
+            escalation_dialog(text_error,location,1)
         }
 
     } catch (e) {
+        const text_error = `\`I'm in error. Please fix me :(\``;
+        escalation_dialog(text_error, `\`In the host\``, 1)
         console.error(e);
     }
 }   

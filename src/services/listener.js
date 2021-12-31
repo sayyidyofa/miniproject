@@ -39,13 +39,7 @@ router.post('/', async (req, res)=>{
             res.status(202).send({message:'Thanks! Your request is being process'});
             
             automator(ip, service, port, type, timestamp);
-            // automate if error type is defined in '../utils/error_type'
-            // const auto = isAutoByErrorType(type)
-            // if (auto) {
-            //     await automator(ip, service, port, type);
-            // } else {
-            //     // call escalation
-            // }
+            
         }else{
             res.status(400).send({message:`[${required}] is required.`})
         }
