@@ -3,7 +3,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { createRequire } from "module";
 import { v4 as uuid } from 'uuid';
-import { WebClient } from '@slack/web-api';
+import pkg from '@slack/web-api';
+const {WebClient} = pkg;
 
 
 dotenv.config()
