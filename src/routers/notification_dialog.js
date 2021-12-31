@@ -3,8 +3,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { createRequire } from "module";
 import { v4 as uuid } from 'uuid';
-import { WebClient } from '@slack/web-api';
-
+import pkg from '@slack/web-api';
+const { WebClient } = pkg;
 
 dotenv.config()
 const notificationRouter =  express.Router();
@@ -16,7 +16,7 @@ var payload_block ={}
 
 //Endpoint slack webhooks for rpa_team channels
 const url = process.env.WEBHOOK_URL;
-
+//BOT Token for RPA BOT
 const client = new WebClient(process.env.BOT_TOKEN);
 
 notificationRouter.post('/escalation_dialog', escalation_dialog)
@@ -80,10 +80,11 @@ async function escalation_dialog(req,res){
                     payload: JSON.stringify({
                         channel: 'C02S28LEWRJ',
                         response_type: "ephemeral",
-                        text: `There is no response from ${members.join(' or ')}, this alert will be assigned to ${supervisor}`
+                        text: `There is no response from ${members.join(' or ')}, this alert will be assigned to ${supervisor}. [ERROR] ${error_message}, Location ${service}`
                     })
                 }
             }, (error, res, body) => {
+
                 if (error) res.sendStatus(500);
                 delete timeouts[messageId];
             })
@@ -98,14 +99,14 @@ async function escalation_dialog(req,res){
 }
 
 function response(req,res) {
+    //function to received response from slack 
+
     const responses = JSON.parse(req.body.payload);
     const act = responses.actions[0].name;
     const { roleId, messageId } = JSON.parse(responses.actions[0].value);
     const fallback = responses.original_message.attachments[0].fallback;
     const members = lookup_role(parseInt(roleId)+1);
     const is_same_user = user_checking(roleId, responses.user.id)
-
-    // const act = responses.actions[0].action_id; // commented because it works in Vio's Bot)
 
     if (is_same_user){
         if (messageId && timeouts[messageId]) {
@@ -125,6 +126,8 @@ function response(req,res) {
 }
 
 function lookup_role(role_id = 1) {
+    //function to search user that define in post request by role_id (read from file roles.json)
+
   const role = roles[role_id];
   const slack_id = [];
   for (let { id_slack } of role) {
@@ -134,6 +137,8 @@ function lookup_role(role_id = 1) {
 }
 
 function user_checking(role_id, user_action){
+    //function user checking (compare between user should be take action and (real) take action)
+
   const role = roles[role_id];
   for (let { id_slack } of role){
     if (user_action == id_slack) return true;
