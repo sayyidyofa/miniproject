@@ -2,56 +2,65 @@
 import util from 'util';
 import { exec } from 'child_process';
 import request from 'request';
-
 import dotenv from 'dotenv';
+import { isAutoByErrorType } from '../utils/helpers.js';
+import { escalation_dialog } from '../routers/notification_dialog.js';
+import report from './report.js';
+
 dotenv.config()
 const url = process.env.WEBHOOK_URL;
-
+const SSH_KEY = process.env.SSH_KEY;
 const asyncExec = util.promisify(exec);
 
-async function generatePlaybookLink(ip, service, port) {
+async function generatePlaybookLink(ip, service, port, type, timestamp) {
     try {
-        // It's not working! Help!!
-        // const templateString = `
-        //     ansible-playbook \
-        //     -e device=${ip} \
-        //     -e service=${service} \
-        //     -e docker_port=${port} \
-        //     -e type=docker \
-        //     -e image=testapp \
-        //     src/playbooks/restart-service.yml`;
-        const templateString = `ssh -i ~/.ssh/ec2v2.pem ec2-user@${ip} docker restart ${service}`;
-        const { stdout, stderr } = await asyncExec(templateString);
+        // send error report
+        report(ip, service, port, type, timestamp,"error")
 
-        if (stderr) {
-            // TODO: escalate problem
-            console.error(stderr);
+        // automate if error type is defined in '../utils/error_type'
+        const auto = await isAutoByErrorType(type)
+        if (auto) {
+            // It's not working! Help!!
+            // const templateString = `
+            //     ansible-playbook \
+            //     -e device=${ip} \
+            //     -e service=${service} \
+            //     -e docker_port=${port} \
+            //     -e type=docker \
+            //     -e image=testapp \
+            //     src/playbooks/restart-service.yml`;
+            const templateString = `ssh -i ${SSH_KEY} ec2-user@${ip} docker restart ${service}`;
+            let isHealth = false;
+            let tried = 3;
+            while (tried > 0 && !isHealth) {
+                const { stdout, stderr } = await asyncExec(templateString);
+                if (stdout) {
+                    request.get(`http://${ip}:${port}/`, (error, res, body) => {
+                        const status = res.statusCode
+                        if (status == 200) {
+                            isHealth = true
+                        }
+                    });
+                }
+                if (stderr) {
+                    // TODO: escalate 
+                    report(ip, service, port, type, timestamp,"failed")
+                    console.error(stderr);
+                    break;
+                }
+                tried -= 1;
+            }
+            // sendSuccess
+            if (isHealth) {
+                report(ip, service, port, type, timestamp,"success")
+            }else{
+                // sendEscalation
+                report(ip, service, port, type, timestamp,"failed")
+            }
+        } else {
+            report(ip, service, port, type, timestamp,"escalate")
         }
-        const payload = JSON.stringify({
-            channel: 'C02S28LEWRJ',
-            text : "RPA Reporting",
-            attachments: [{
-                blocks: [{
-                    type: "section",
-                    text: {
-                        type: "mrkdwn",
-                        text: `service ${service} at ${ip}:${port} has been successfully restarted at ${new Date()}.`
-                    },
-                    block_id: "alert_error"
-                }]
-            }]
-        });
 
-        console.log(stdout);
-        if (stdout) {
-            request.post({
-                url,
-                form: { payload }
-            }, (error, res, body) => {
-                console.log(error, body, res.statusCode)
-            });
-        }
-        return stdout;
     } catch (e) {
         console.error(e);
     }

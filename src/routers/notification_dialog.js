@@ -16,25 +16,23 @@ var payload_block = {}
 
 //Endpoint slack webhooks for rpa_team channels
 const url = process.env.WEBHOOK_URL;
+const CHANNEL_ID = process.env.channel_id
 //BOT Token for RPA BOT
 const client = new WebClient(process.env.BOT_TOKEN);
 
-notificationRouter.post('/escalation_dialog', escalation_dialog)
+// notificationRouter.post('/escalation_dialog', escalation_dialog)
 
 notificationRouter.post('/response', response)
 
-async function escalation_dialog(req, res) {
+async function escalation_dialog(error_message, service, roleId) {
     try {
-        const error_message = req.body.message; // message will be send to chat
-        const service = req.body.service;
-        const roleId = req.body.roleId;
         const messageId = uuid();
 
         const members = lookup_role(roleId);
         const value = JSON.stringify({ roleId, messageId });
 
         payload_block = {
-            "channel": process.env.channel_id,
+            "channel": CHANNEL_ID,
             "type": "interactive_message",
             "text": "RPA Reporting",
             "attachments": [
@@ -71,7 +69,7 @@ async function escalation_dialog(req, res) {
         const currentTimeout = setTimeout(() => {
             const supervisor = lookup_role(parseInt(roleId) + 1);
             client.chat.delete({
-                channel: process.env.channel_id,
+                channel: CHANNEL_ID,
                 ts: result_chat.ts
             })
             request.post({
@@ -79,9 +77,9 @@ async function escalation_dialog(req, res) {
                 url,
                 form: {
                     payload: JSON.stringify({
-                        channel: 'C02S28LEWRJ',
+                        channel: CHANNEL_ID,
                         response_type: "ephemeral",
-                        text: `There is no response from ${members.join(' or ')}, this alert will be assigned to ${supervisor}. [ERROR] ${error_message}, Location ${service}`
+                        text: `There is no response from ${members.join(' or ')}, this alert will be assigned to ${supervisor}. \n[ERROR] ${error_message}, Location ${service}`
                     })
                 }
             }, (error, res, body) => {
@@ -92,10 +90,10 @@ async function escalation_dialog(req, res) {
         }, TIMEOUT_SECOND);
         timeouts[messageId] = currentTimeout;
 
-        return res.sendStatus(200);
+        // return res.sendStatus(200);
     } catch (e) {
         console.log(e)
-        res.sendStatus(500);
+        // res.sendStatus(500);
     }
 }
 
