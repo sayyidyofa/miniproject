@@ -115,12 +115,12 @@ function response(req, res) {
             delete timeouts[messageId];
         }
         if (act == 'approve') {
-            res.send(`Troubleshooting Status: [ERROR] ${fallback} will be \
-            taken care of by <@${responses.user.id}>`)
+            res.send(`Troubleshooting Status: [ERROR] ${fallback} will be ` + 
+            `taken care of by <@${responses.user.id}>`);
         } else {
-            res.send(`Troubleshooting Status:  [ERROR] ${fallback} can't be \ 
-            handled by <@${responses.user.id}>! This problem will be escalated \
-            to ${members}!`)
+            res.send(`Troubleshooting Status: [ERROR] ${fallback} can't be ` +
+            `handled by <@${responses.user.id}>! This problem will be escalated ` +
+            `to ${members}!`);
         }
     }
     else {
