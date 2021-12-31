@@ -4,6 +4,7 @@ import express from 'express';
 import listener from './services/listener.js';
 import dotenv from 'dotenv';
 import pipelineAutomator from './routers/pipeline_router.js';
+import dockerState from './routers/docker-state.js';
 import {notificationRouter} from './routers/notification_dialog.js';
 
 dotenv.config();
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/log', listener)
 app.use('/pipeline', pipelineAutomator)
+app.use('/docker-state', dockerState)
 app.use('', notificationRouter)
 
 
