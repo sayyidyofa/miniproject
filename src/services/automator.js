@@ -6,6 +6,7 @@ import request from 'request';
 import dotenv from 'dotenv';
 dotenv.config()
 const url = process.env.WEBHOOK_URL;
+const SSH_KEY = process.env.SSH_KEY;
 
 const asyncExec = util.promisify(exec);
 
@@ -20,7 +21,7 @@ async function generatePlaybookLink(ip, service, port) {
         //     -e type=docker \
         //     -e image=testapp \
         //     src/playbooks/restart-service.yml`;
-        const templateString = `ssh -i ~/.ssh/ec2v2.pem ec2-user@${ip} docker restart ${service}`;
+        const templateString = `ssh -i ${SSH_KEY} ec2-user@${ip} docker restart ${service}`;
         const { stdout, stderr } = await asyncExec(templateString);
 
         if (stderr) {
