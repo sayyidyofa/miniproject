@@ -39,7 +39,7 @@ async function escalation_dialog(req, res) {
             "text": "RPA Reporting",
             "attachments": [
                 {
-                    "text": `[ERROR] Developer ${members}.\nError message: ${error_message}\nError location: ${service}\n\nWould you like to fix it?`,
+                    "text": `[ERROR] Hi ${members.join(', ')} our system can't automatically handle this error.\nError message: ${error_message}\nError location: ${service}\n\nWould you like to fix it?`,
                     "attachment_type": "default",
                     "callback_id": "selection_action",
                     "fallback": ` ${error_message} location : ${service}`,
@@ -81,7 +81,7 @@ async function escalation_dialog(req, res) {
                     payload: JSON.stringify({
                         channel: 'C02S28LEWRJ',
                         response_type: "ephemeral",
-                        text: `There is no response from ${members.join(' or ')}, this alert will be assigned to ${supervisor}. [ERROR] ${error_message}, Location ${service}`
+                        text: `There is no response from ${members.join(' or ')}, this alert will be assigned to ${supervisor}.\n[ERROR] ${error_message}, Location ${service}`
                     })
                 }
             }, (error, res, body) => {
@@ -119,12 +119,12 @@ function response(req, res) {
             taken care of by <@${responses.user.id}>`)
         } else {
             res.send(`Troubleshooting Status:  [ERROR] ${fallback} can't be \ 
-            handled by <@${responses.user.id}>! This Problem will be escalated \
-            to Manager:${members}!`)
+            handled by <@${responses.user.id}>! This problem will be escalated \
+            to ${members}!`)
         }
     }
     else {
-        res.send({ text: `<@${responses.user.id}> You dont have permissions to take this error`, replace_original: false });
+        res.send({ text: `Sorry <@${responses.user.id}> but you dont have permissions to take this error`, replace_original: false });
     }
 
 }
