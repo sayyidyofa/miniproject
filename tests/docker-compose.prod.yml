@@ -36,3 +36,27 @@ services:
     env_file: .env
     environment:
       - HOST_PORT=3003
+  worker4:
+    image: testapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: worker4
+    ports:
+      - "3004:4444"
+    restart: on-failure
+    env_file: .env
+    environment:
+      - HOST_PORT=3004
+  worker5:
+    image: testapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: worker5
+    ports:
+      - "3005:4444"
+    restart: on-failure
+    env_file: .env
+    environment:
+      - HOST_PORT=3005

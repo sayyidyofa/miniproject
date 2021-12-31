@@ -1,15 +1,12 @@
 // TODO: Implement simple http listener for receiving data from parser
 import express from 'express';
-import request from 'request';
 import dotenv from 'dotenv';
-dotenv.config();
-
 
 // import service
 import automator from './automator.js';
-import { checkRequired, isAutoByErrorType, ipAddressChecker } from '../utils/helpers.js';
+import { checkRequired, ipAddressChecker } from '../utils/helpers.js';
 
-// This is the router from express
+dotenv.config();
 const router = express.Router();
 const url = process.env.WEBHOOK_URL;
 
@@ -27,7 +24,7 @@ router.post('/', async (req, res)=>{
             const type = log.type;
             const service = log.service;
             const ip = log.from.split(':')[0];
-            const port = log.from.split(':')[1]?log.from.split(':')[1]:"";
+            const port = log.from.split(':')[1];
             const timestamp = log.timestamp;
 
             // Call automator and pass the parameter
@@ -40,34 +37,15 @@ router.post('/', async (req, res)=>{
             }
               
             res.status(202).send({message:'Thanks! Your request is being process'});
-
-            const payload_block = {
-                "text" : "RPA Reporting",
-                "attachments": [{
-                    "blocks": [{
-                        "type": "section",
-                        "text": {
-                                    "type": "mrkdwn",
-                                    "text": `[ERROR-${timestamp}] ${type} from service ${service} at ${ip+(port?":"+port:"")}`
-                                },
-                        "block_id": "alert_error"
-                    }]
-                }
-            ]};
-
-            request.post({
-                headers : { 'Content-type' : 'application/json' },
-                url,
-                form : {payload: JSON.stringify(payload_block)}
-            },(error, res, body) => console.log(error, body, res.statusCode));
             
+            automator(ip, service, port, type, timestamp);
             // automate if error type is defined in '../utils/error_type'
-            const auto = isAutoByErrorType(type)
-            if (auto) {
-                await automator(ip, service, port);
-            } else {
-                // call escalation
-            }
+            // const auto = isAutoByErrorType(type)
+            // if (auto) {
+            //     await automator(ip, service, port, type);
+            // } else {
+            //     // call escalation
+            // }
         }else{
             res.status(400).send({message:`[${required}] is required.`})
         }

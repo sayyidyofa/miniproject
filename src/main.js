@@ -18,7 +18,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/log', listener)
 app.use('/pipeline', pipelineAutomator)
 app.use('/docker-state', dockerState)
-app.use('', notificationRouter)
 
 
 // Run the server
