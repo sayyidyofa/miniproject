@@ -61,5 +61,6 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           cd miniproject
+          npm install
           kill -9 `ps | grep node | awk {'print $1'}`
           node src/main.js > ~/debug 2>~/anomali &
