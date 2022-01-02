@@ -30,7 +30,7 @@ async function generatePlaybookLink(ip, service, port, type, timestamp) {
             //     -e type=docker \
             //     -e image=testapp \
             //     src/playbooks/restart-service.yml`;
-            const templateString = `ssh -i ${SSH_KEY} ec2-user@${ip} docker restart ${service}`;
+            const templateString = `docker restart ${service}`;
             let isHealth = false;
             let tried = 3;
             while (tried > 0 && !isHealth) {
@@ -44,7 +44,6 @@ async function generatePlaybookLink(ip, service, port, type, timestamp) {
                     });
                 }
                 if (stderr) {
-                    // TODO: escalate 
                     // There is some error. RPA is not working. (default role: 1)
                     const location = `${ip}:${port}`;
                     const text_error = `*${type}* from service *${service}* at *${ip + (port ? ":" + port : "")}*.\n`+
@@ -79,6 +78,6 @@ async function generatePlaybookLink(ip, service, port, type, timestamp) {
         escalation_dialog(text_error, `\`In the host\``, 1)
         console.error(e);
     }
-}   
+}
 
 export default generatePlaybookLink
