@@ -36,12 +36,15 @@ async function generatePlaybookLink(ip, service, port, type, timestamp) {
             while (tried > 0 && !isHealth) {
                 const { stdout, stderr } = await asyncExec(templateString);
                 if (stdout) {
-                    request.get(`http://${ip}:${port}/`, (error, res, body) => {
-                        const status = res.statusCode || 500
-                        if (status == 200) {
-                            isHealth = true
-                        }
-                    });
+                    //new Promise(resolve => setTimeout(resolve, 10));
+                    setTimeout(() => {
+                        request.get(`http://${ip}:${port}/`, (error, res, body) => {
+                            const status = res?.statusCode || 500
+                            if (status === 200) {
+                                isHealth = true
+                            }
+                        });
+                    }, 10000);
                 }
                 if (stderr) {
                     // There is some error. RPA is not working. (default role: 1)

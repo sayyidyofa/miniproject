@@ -19,6 +19,7 @@ jobs:
         mv ./tests/docker-compose.prod.yml ./tests/docker-compose.yml
         echo -e 'WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}' >> .env
         echo -e 'BOT_TOKEN=${{ secrets.BOT_TOKEN }}' >> .env
+        echo -e 'channel_id=${{ secrets.channel_id }}' >> .env
     - name: Install Rsync
       run: sudo apt update && sudo apt install rsync
     - name: Create rsync exclude.txt
