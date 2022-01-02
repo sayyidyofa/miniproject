@@ -57,6 +57,7 @@ jobs:
       run: |
         echo -e 'WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}' > .env
         echo -e 'BOT_TOKEN=${{ secrets.BOT_TOKEN }}' >> .env
+        echo -e 'SSH_KEY=${{ secrets.SSH_PRIVATE_KEY }}' >> .env
     - name: Install Rsync
       run: sudo apt update && sudo apt install rsync
     - name: Create rsync exclude.txt
