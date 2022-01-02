@@ -46,7 +46,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: cd miniproject/tests && docker kill worker{1,2,3,4,5} 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
   deploy-main:
-    needs: deploy-test
+    needs: deploy-tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-node@v2
