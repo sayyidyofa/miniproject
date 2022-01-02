@@ -66,21 +66,21 @@ jobs:
         echo -e '.idea' >> exclude-list.txt
         echo -e 'exclude-list.txt' >> exclude-list.txt
     - name: Adding Host key to know_hosts file
-      run: mkdir -p ~/.ssh && ssh-keyscan -H ${{ secrets.MAIN_SERVER_HOSTNAME }} >> ~/.ssh/known_hosts
+      run: mkdir -p ~/.ssh && ssh-keyscan -H ${{ secrets.SERVER_HOSTNAME }} >> ~/.ssh/known_hosts
     - name: Deploy to staging Server via Rsync
       uses: AEnterprise/rsync-deploy@v1.0
       env:
-        DEPLOY_KEY: ${{ secrets.MAIN_SSH_PRIVATE_KEY }}
+        DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         ARGS: "-azvW --delete --exclude-from exclude-list.txt"
-        SERVER_PORT: ${{ secrets.MAIN_SSH_PORT }}
+        SERVER_PORT: ${{ secrets.SSH_PORT }}
         FOLDER: "./"
-        SERVER_IP: ${{ secrets.MAIN_SERVER_HOSTNAME }}
-        USERNAME: ${{ secrets.MAIN_SSH_USERNAME }}
-        SERVER_DESTINATION: ${{ secrets.MAIN_DEPLOY_PATH }}
+        SERVER_IP: ${{ secrets.SERVER_HOSTNAME }}
+        USERNAME: ${{ secrets.SSH_USERNAME }}
+        SERVER_DESTINATION: ${{ secrets.DEPLOY_PATH }}
     - name: Start all services over SSH
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.MAIN_SERVER_HOSTNAME }}
-        username: ${{ secrets.MAIN_SSH_USERNAME }}
-        key: ${{ secrets.MAIN_SSH_PRIVATE_KEY }}
+        host: ${{ secrets.SERVER_HOSTNAME }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: cd miniproject && docker kill minirpa 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
