@@ -40,10 +40,29 @@ jobs:
           SERVER_IP: ${{ secrets.SERVER_HOSTNAME }}
           USERNAME: ${{ secrets.SSH_USERNAME }}
           SERVER_DESTINATION: ${{ secrets.DEPLOY_PATH }}
-    - name: Start all services over SSH
+    - name: Start testApp services over SSH
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SERVER_HOSTNAME }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: docker kill minirpa 2>/dev/null && cd miniproject/tests && docker kill worker{1,2,3,4,5} 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps && cd .. && docker-compose up --build -d && docker ps
+        script: |
+          cd miniproject/tests
+          docker kill worker{1,2,3,4,5} 2>/dev/null
+          docker container prune -f
+          docker image prune -a -f
+          docker-compose up --build -d
+          docker ps
+    - name: Start main services over SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOSTNAME }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd miniproject
+          docker kill minirpa 2>/dev/null
+          docker container prune -f
+          docker image prune -a -f
+          docker-compose up --build -d
+          docker ps
