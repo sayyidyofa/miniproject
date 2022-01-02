@@ -57,7 +57,7 @@ jobs:
         echo -e 'WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}' > .env
         echo -e 'BOT_TOKEN=${{ secrets.BOT_TOKEN }}' >> .env
         echo -e 'SSH_KEY=ssh_key' >> .env
-        echo -e '${{ secrets.GCE_SSH_PRIVATE_KEY }}' > ssh_key
+        echo -e '${{ secrets.SSH_PRIVATE_KEY }}' > ssh_key
     - name: Install Rsync
       run: sudo apt update && sudo apt install rsync
     - name: Create rsync exclude.txt
@@ -85,4 +85,4 @@ jobs:
         host: ${{ secrets.GCE_SERVER_HOSTNAME }}
         username: ${{ secrets.GCE_SSH_USERNAME }}
         key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
-        script: cd miniproject && docker kill minirpa 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
+        script: cd miniproject && cp ssh_key .. && docker kill minirpa 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
