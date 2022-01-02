@@ -85,4 +85,4 @@ jobs:
         host: ${{ secrets.GCE_SERVER_HOSTNAME }}
         username: ${{ secrets.GCE_SSH_USERNAME }}
         key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
-        script: cd miniproject && cp ssh_key .. && docker kill minirpa 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
+        script: cd miniproject && chmod 400 ssh_key && docker kill minirpa 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
