@@ -12,6 +12,7 @@ services:
     env_file: .env
     environment:
       - HOST_PORT=3001
+      - SERVICE_NAME=worker1
   worker2:
     image: testapp
     build:
@@ -24,6 +25,7 @@ services:
     env_file: .env
     environment:
       - HOST_PORT=3002
+      - SERVICE_NAME=worker2
   worker3:
     image: testapp
     build:
@@ -36,6 +38,7 @@ services:
     env_file: .env
     environment:
       - HOST_PORT=3003
+      - SERVICE_NAME=worker3
   worker4:
     image: testapp
     build:
@@ -48,6 +51,7 @@ services:
     env_file: .env
     environment:
       - HOST_PORT=3004
+      - SERVICE_NAME=worker4
   worker5:
     image: testapp
     build:
@@ -60,3 +64,4 @@ services:
     env_file: .env
     environment:
       - HOST_PORT=3005
+      - SERVICE_NAME=worker5
