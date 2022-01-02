@@ -1,11 +1,11 @@
-name: Test App Deploy
+name: Test App & Main Deploy
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  deploy-staging:
+  deploy-tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-node@v2
@@ -45,3 +45,42 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: cd miniproject/tests && docker kill worker{1,2,3,4,5} 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
+  deploy-main:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '16.13.1'
+    - uses: actions/checkout@v2
+    - name: Write .env file and use production-mode docker-compose file
+      run: |
+        echo -e 'WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}' > .env
+        echo -e 'BOT_TOKEN=${{ secrets.BOT_TOKEN }}' >> .env
+    - name: Install Rsync
+      run: sudo apt update && sudo apt install rsync
+    - name: Create rsync exclude.txt
+      run: |
+        echo -e '.git' >> exclude-list.txt
+        echo -e '.env.example' >> exclude-list.txt
+        echo -e '.gitignore' >> exclude-list.txt
+        echo -e '.idea' >> exclude-list.txt
+        echo -e 'exclude-list.txt' >> exclude-list.txt
+    - name: Adding Host key to know_hosts file
+      run: mkdir -p ~/.ssh && ssh-keyscan -H ${{ secrets.MAIN_SERVER_HOSTNAME }} >> ~/.ssh/known_hosts
+    - name: Deploy to staging Server via Rsync
+      uses: AEnterprise/rsync-deploy@v1.0
+      env:
+        DEPLOY_KEY: ${{ secrets.MAIN_SSH_PRIVATE_KEY }}
+        ARGS: "-azvW --delete --exclude-from exclude-list.txt"
+        SERVER_PORT: ${{ secrets.MAIN_SSH_PORT }}
+        FOLDER: "./"
+        SERVER_IP: ${{ secrets.MAIN_SERVER_HOSTNAME }}
+        USERNAME: ${{ secrets.MAIN_SSH_USERNAME }}
+        SERVER_DESTINATION: ${{ secrets.MAIN_DEPLOY_PATH }}
+    - name: Start all services over SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.MAIN_SERVER_HOSTNAME }}
+        username: ${{ secrets.MAIN_SSH_USERNAME }}
+        key: ${{ secrets.MAIN_SSH_PRIVATE_KEY }}
+        script: cd miniproject && docker kill minirpa 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
