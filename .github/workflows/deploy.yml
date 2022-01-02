@@ -46,7 +46,6 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: cd miniproject/tests && docker kill worker{1,2,3,4,5} 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
   deploy-main:
-    needs: deploy-tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-node@v2
@@ -57,7 +56,8 @@ jobs:
       run: |
         echo -e 'WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}' > .env
         echo -e 'BOT_TOKEN=${{ secrets.BOT_TOKEN }}' >> .env
-        echo -e 'SSH_KEY=${{ secrets.SSH_PRIVATE_KEY }}' >> .env
+        echo -e 'SSH_KEY=ssh_key' >> .env
+        echo -e '${{ secrets.GCE_SSH_PRIVATE_KEY }}' > ssh_key
     - name: Install Rsync
       run: sudo apt update && sudo apt install rsync
     - name: Create rsync exclude.txt
@@ -68,21 +68,21 @@ jobs:
         echo -e '.idea' >> exclude-list.txt
         echo -e 'exclude-list.txt' >> exclude-list.txt
     - name: Adding Host key to know_hosts file
-      run: mkdir -p ~/.ssh && ssh-keyscan -H ${{ secrets.SERVER_HOSTNAME }} >> ~/.ssh/known_hosts
+      run: mkdir -p ~/.ssh && ssh-keyscan -H ${{ secrets.GCE_SERVER_HOSTNAME }} >> ~/.ssh/known_hosts
     - name: Deploy to staging Server via Rsync
       uses: AEnterprise/rsync-deploy@v1.0
       env:
-        DEPLOY_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        DEPLOY_KEY: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
         ARGS: "-azvW --delete --exclude-from exclude-list.txt"
-        SERVER_PORT: ${{ secrets.SSH_PORT }}
+        SERVER_PORT: ${{ secrets.GCE_SSH_PORT }}
         FOLDER: "./"
-        SERVER_IP: ${{ secrets.SERVER_HOSTNAME }}
-        USERNAME: ${{ secrets.SSH_USERNAME }}
-        SERVER_DESTINATION: ${{ secrets.DEPLOY_PATH }}
+        SERVER_IP: ${{ secrets.GCE_SERVER_HOSTNAME }}
+        USERNAME: ${{ secrets.GCE_SSH_USERNAME }}
+        SERVER_DESTINATION: ${{ secrets.GCE_DEPLOY_PATH }}
     - name: Start all services over SSH
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SERVER_HOSTNAME }}
-        username: ${{ secrets.SSH_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        host: ${{ secrets.GCE_SERVER_HOSTNAME }}
+        username: ${{ secrets.GCE_SSH_USERNAME }}
+        key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
         script: cd miniproject && docker kill minirpa 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
