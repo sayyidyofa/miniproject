@@ -17,6 +17,8 @@ jobs:
         echo -e 'HOST_ADDRESS=${{ secrets.SERVER_IP }}' > ./tests/.env
         rm ./tests/docker-compose.yml
         mv ./tests/docker-compose.prod.yml ./tests/docker-compose.yml
+        echo -e 'WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}' >> .env
+        echo -e 'BOT_TOKEN=${{ secrets.BOT_TOKEN }}' >> .env
     - name: Install Rsync
       run: sudo apt update && sudo apt install rsync
     - name: Create rsync exclude.txt
@@ -44,45 +46,4 @@ jobs:
         host: ${{ secrets.SERVER_HOSTNAME }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: cd miniproject/tests && docker kill worker{1,2,3,4,5} 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
-  deploy-main:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/setup-node@v2
-      with:
-        node-version: '16.13.1'
-    - uses: actions/checkout@v2
-    - name: Write .env file and use production-mode docker-compose file
-      run: |
-        echo -e 'WEBHOOK_URL=${{ secrets.WEBHOOK_URL }}' > .env
-        echo -e 'BOT_TOKEN=${{ secrets.BOT_TOKEN }}' >> .env
-        echo -e 'SSH_KEY=ssh_key' >> .env
-        echo -e '${{ secrets.SSH_PRIVATE_KEY }}' > ssh_key
-    - name: Install Rsync
-      run: sudo apt update && sudo apt install rsync
-    - name: Create rsync exclude.txt
-      run: |
-        echo -e '.git' >> exclude-list.txt
-        echo -e '.env.example' >> exclude-list.txt
-        echo -e '.gitignore' >> exclude-list.txt
-        echo -e '.idea' >> exclude-list.txt
-        echo -e 'exclude-list.txt' >> exclude-list.txt
-    - name: Adding Host key to know_hosts file
-      run: mkdir -p ~/.ssh && ssh-keyscan -H ${{ secrets.GCE_SERVER_HOSTNAME }} >> ~/.ssh/known_hosts
-    - name: Deploy to staging Server via Rsync
-      uses: AEnterprise/rsync-deploy@v1.0
-      env:
-        DEPLOY_KEY: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
-        ARGS: "-azvW --delete --exclude-from exclude-list.txt"
-        SERVER_PORT: ${{ secrets.GCE_SSH_PORT }}
-        FOLDER: "./"
-        SERVER_IP: ${{ secrets.GCE_SERVER_HOSTNAME }}
-        USERNAME: ${{ secrets.GCE_SSH_USERNAME }}
-        SERVER_DESTINATION: ${{ secrets.GCE_DEPLOY_PATH }}
-    - name: Start all services over SSH
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.GCE_SERVER_HOSTNAME }}
-        username: ${{ secrets.GCE_SSH_USERNAME }}
-        key: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
-        script: cd miniproject && chmod 400 ssh_key && docker kill minirpa 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps
+        script: docker kill minirpa 2>/dev/null && cd miniproject/tests && docker kill worker{1,2,3,4,5} 2>/dev/null || docker container prune -f && docker image prune -a -f && docker-compose up --build -d && docker ps && docker-compose up --build -d && docker ps

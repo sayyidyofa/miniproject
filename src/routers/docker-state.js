@@ -17,14 +17,14 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ success: false, message: 'state only support [ start | stop | restart ]' });
     }
 
-    const { stdout: psOut } = await asyncExec(`ssh -i ssh_key ec2-user@54.254.115.67 docker ps -a --format={{.Names}}`);
+    const { stdout: psOut } = await asyncExec(`docker ps -a --format={{.Names}}`);
     const allContainers = psOut.split('\n');
 
     if (!allContainers.includes(container)) {
       return res.status(404).json({ success: false, message: `container with ${container} name not found` });
     }
 
-    const { stderr } = await asyncExec(`ssh -i ssh_key ec2-user@54.254.115.67 docker ${state} ${container}`);
+    const { stderr } = await asyncExec(`docker ${state} ${container}`);
     if (stderr) {
       throw new Error(stderr);
     }
