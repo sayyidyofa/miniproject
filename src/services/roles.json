@@ -47,5 +47,32 @@
             "nik" : "21070",
             "posititon" : "scrum-master"
         }
-    ]
+    ],
+    "5":
+    [
+        {
+            "id_slack" : "U02SCL1TM4H",
+            "name" : "Bob Y.",
+            "nik" : "21190",
+            "posititon" : "product-owner"
+        }
+    ],
+    "6":
+    [
+        {
+            "id_slack" : "U02RTNPLCP8",
+            "name" : "Robby Hemawan P.",
+            "nik" : "21192",
+            "posititon" : "Developer"
+        }
+    ],
+    "7":
+    [
+        {
+            "id_slack" : "U02S2MSHZNY",
+            "name" : "Hamdani Fadhli",
+            "nik" : "21193",
+            "posititon" : "Head of Operation"
+        }
+    ],   
 }
