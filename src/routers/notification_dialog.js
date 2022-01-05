@@ -127,8 +127,9 @@ function response(req, res) {
 
 }
 
-function lookup_role(role_id, workerName) {
+function lookup_role(role_id, location) {
     //function to search user that define in post request by role_id (read from file roles.json)
+    const workerName = `worker${location.slice(17, 18)}`;
     switch (workerName) {
         case "worker1":
         case "worker2":
