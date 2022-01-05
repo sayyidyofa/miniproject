@@ -28,7 +28,7 @@ async function escalation_dialog(error_message, service, roleId) {
     try {
         const messageId = uuid();
 
-        const members = lookup_role(roleId);
+        const members = lookup_role(roleId, service);
         const value = JSON.stringify({ roleId, messageId });
 
         payload_block = {
@@ -98,7 +98,7 @@ async function escalation_dialog(error_message, service, roleId) {
 }
 
 function response(req, res) {
-    //function to received response from slack 
+    //function to received response from slack
 
     const responses = JSON.parse(req.body.payload);
     const act = responses.actions[0].name;
@@ -113,7 +113,7 @@ function response(req, res) {
             delete timeouts[messageId];
         }
         if (act == 'approve') {
-            res.send(`Troubleshooting Status: [ERROR] ${fallback} will be ` + 
+            res.send(`Troubleshooting Status: [ERROR] ${fallback} will be ` +
             `taken care of by <@${responses.user.id}>`);
         } else {
             res.send(`Troubleshooting Status: [ERROR] ${fallback} can't be ` +
@@ -127,8 +127,24 @@ function response(req, res) {
 
 }
 
-function lookup_role(role_id = 1) {
+function lookup_role(role_id, workerName) {
     //function to search user that define in post request by role_id (read from file roles.json)
+    switch (workerName) {
+        case "worker1":
+        case "worker2":
+        case "worker5":
+            role_id = 1;
+            break;
+        case "worker3":
+            role_id = 5;
+            break;
+        case "worker4":
+            role_id = 6;
+            break;
+        default:
+            role_id = 1;
+            break;
+    }
 
     const role = roles[role_id];
     const slack_id = [];
@@ -148,4 +164,4 @@ function user_checking(role_id, user_action) {
     return false;
 }
 
-export { notificationRouter, escalation_dialog } 
+export { notificationRouter, escalation_dialog }
