@@ -9,10 +9,8 @@ function isAutoByErrorType(errorType){
 
     const stringifiedErrorType = String(errorType)
     if (errorList.includes(stringifiedErrorType)){
-        console.log(`'${stringifiedErrorType}' is handled by automator`)
         return true
     } else{
-        console.log(`'${stringifiedErrorType}' will be escalated`)
         return false
     }
 }

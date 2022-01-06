@@ -101,6 +101,11 @@ httpService.get("/break/:ip", (req, res) => {
   res.send("success");
 });
 
+httpService.get("/heal", (req, res) => {
+  writeFileSync('important_file', 'healthy=true\nmanual_config=valid');
+  res.send("success");
+});
+
 httpService.get("/breakManual/:ip", (req, res) => {
   var log = severe_make(process.env.SERVICE_NAME);
   let ip = req.params.ip;
